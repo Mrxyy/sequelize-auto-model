@@ -1,5 +1,5 @@
-import _ from "lodash";
-import { addTicks, DialectOptions, FKRow, makeCondition } from "./dialect-options";
+import _ from 'lodash';
+import { addTicks, DialectOptions, FKRow, makeCondition } from './dialect-options';
 
 export const mssqlOptions: DialectOptions = {
   name: 'mssql',
@@ -51,7 +51,7 @@ export const mssqlOptions: DialectOptions = {
     // https://docs.microsoft.com/en-us/sql/relational-databases/system-information-schema-views/system-information-schema-views-transact-sql
     // When it is supported, countTriggerGeneric() could be used instead, but it is better
     // to keep backwards compatibility.
-    const qname = addTicks((schemaName ? schemaName + "." : "") + tableName);
+    const qname = addTicks((schemaName ? schemaName + '.' : '') + tableName);
     return `SELECT COUNT(0) AS trigger_count
               FROM sys.objects tr,  sys.objects tb
              WHERE tr.type = 'TR'
@@ -100,7 +100,7 @@ export const mssqlOptions: DialectOptions = {
    */
   isSerialKey: (record: FKRow) => {
     return (
-      _.isObject(record) && mssqlOptions.isPrimaryKey(record) && (_.has(record, 'is_identity') && record.is_identity)
+      _.isObject(record) && mssqlOptions.isPrimaryKey(record) && _.has(record, 'is_identity') && record.is_identity
     );
   },
   /**
@@ -113,21 +113,22 @@ export const mssqlOptions: DialectOptions = {
     return `SELECT TABLE_NAME AS table_name, TABLE_SCHEMA AS table_schema
               FROM INFORMATION_SCHEMA.TABLES
              WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME != 'sysdiagrams'
-                   ${makeCondition("TABLE_SCHEMA", schemaName)}`;
+                   ${makeCondition('TABLE_SCHEMA', schemaName)}`;
   },
 
   showViewsQuery: (schemaName?: string) => {
     return `SELECT TABLE_NAME AS table_name, TABLE_SCHEMA AS table_schema
               FROM INFORMATION_SCHEMA.TABLES
              WHERE TABLE_TYPE = 'VIEW'
-                  ${makeCondition("TABLE_SCHEMA", schemaName)}`;
+                  ${makeCondition('TABLE_SCHEMA', schemaName)}`;
   },
 
   /** Sequelize "describeTable" doesn't include precision and scale in mssql */
   showPrecisionQuery: (tableName: string, schemaName?: string) => {
-    return `SELECT COLUMN_NAME AS column_name, NUMERIC_PRECISION AS numeric_precision, NUMERIC_SCALE AS numeric_scale
-    FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '${tableName}'` + (!schemaName ? '' : ` AND TABLE_SCHEMA = '${schemaName}'`);
+    return (
+      `SELECT COLUMN_NAME AS column_name, NUMERIC_PRECISION AS numeric_precision, NUMERIC_SCALE AS numeric_scale
+    FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '${tableName}'` +
+      (!schemaName ? '' : ` AND TABLE_SCHEMA = '${schemaName}'`)
+    );
   },
-
-
 };

@@ -1,5 +1,5 @@
-import _ from "lodash";
-import { addTicks, DialectOptions, FKRow, makeCondition } from "./dialect-options";
+import _ from 'lodash';
+import { addTicks, DialectOptions, FKRow, makeCondition } from './dialect-options';
 
 export const mysqlOptions: DialectOptions = {
   name: 'mysql',
@@ -41,7 +41,7 @@ export const mysqlOptions: DialectOptions = {
     return `SELECT COUNT(0) AS trigger_count
               FROM INFORMATION_SCHEMA.TRIGGERS AS t
              WHERE t.EVENT_OBJECT_TABLE = ${addTicks(tableName)}
-                  ${makeCondition("t.EVENT_OBJECT_SCHEMA", schemaName)}`;
+                  ${makeCondition('t.EVENT_OBJECT_SCHEMA', schemaName)}`;
   },
 
   /**
@@ -66,7 +66,9 @@ export const mysqlOptions: DialectOptions = {
     if (!_.isObject(record) || !_.has(record, 'column_key')) {
       return false;
     }
-    return records.some(row => row.constraint_name === record.constraint_name && (row.column_key.toUpperCase() === 'UNI'));
+    return records.some(
+      (row) => row.constraint_name === record.constraint_name && row.column_key.toUpperCase() === 'UNI'
+    );
   },
 
   /**
@@ -93,6 +95,5 @@ export const mysqlOptions: DialectOptions = {
 
   showViewsQuery: (dbName?: string) => {
     return `select TABLE_NAME as table_name from information_schema.tables where table_type = 'VIEW' and table_schema = '${dbName}'`;
-  }
-
+  },
 };

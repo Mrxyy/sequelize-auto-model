@@ -1,10 +1,9 @@
-import { Utils } from "sequelize";
-
+import { Utils } from 'sequelize';
 
 export interface DialectOptions {
   name: string;
   hasSchema: boolean;
-  
+
   getForeignKeysQuery: (tableName: string, schemaName: string) => string;
   remapForeignKeysRow?: (tableName: string, row: FKRow) => FKRelation;
   countTriggerQuery: (tableName: string, schemaName: string) => string;
@@ -85,5 +84,5 @@ export function addTicks(value: any) {
 }
 
 export function makeCondition(columnName: string, value?: string) {
-  return value ? ` AND ${columnName} = ${addTicks(value)} ` : "";
+  return value ? ` AND ${columnName} = ${addTicks(value)} ` : '';
 }

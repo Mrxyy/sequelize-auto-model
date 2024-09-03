@@ -1,5 +1,5 @@
-import _ from "lodash";
-import { addTicks, DialectOptions, FKRow } from "./dialect-options";
+import _ from 'lodash';
+import { addTicks, DialectOptions, FKRow } from './dialect-options';
 
 export const sqliteOptions: DialectOptions = {
   name: 'sqlite',
@@ -32,7 +32,7 @@ export const sqliteOptions: DialectOptions = {
       source_column: row.from,
       target_schema: undefined,
       target_table: row.table,
-      target_column: row.to
+      target_column: row.to,
     };
   },
 
@@ -71,12 +71,14 @@ export const sqliteOptions: DialectOptions = {
    */
   isSerialKey: (record: FKRow) => {
     return (
-      _.isObject(record) && sqliteOptions.isPrimaryKey(record) && (!!record.type && record.type.toUpperCase() === 'INTEGER')
+      _.isObject(record) &&
+      sqliteOptions.isPrimaryKey(record) &&
+      !!record.type &&
+      record.type.toUpperCase() === 'INTEGER'
     );
   },
 
   showViewsQuery: () => {
     return `SELECT name FROM "sqlite_master" WHERE type='view'`;
-  }
-
+  },
 };
