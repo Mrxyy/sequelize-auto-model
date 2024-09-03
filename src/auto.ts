@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { Dialect, Sequelize } from 'sequelize';
+import { DataTypes, Dialect, Sequelize } from 'sequelize';
 import { AutoBuilder } from './auto-builder';
 import { AutoGenerator } from './auto-generator';
 import { AutoRelater } from './auto-relater';
@@ -39,7 +39,7 @@ export class SequelizeAuto {
         host: 'localhost',
         port: this.getDefaultPort(options.dialect),
         closeConnectionAutomatically: true,
-      },
+      } as AutoOptions,
       options || {}
     );
 
@@ -51,17 +51,17 @@ export class SequelizeAuto {
   async run(): Promise<TableData> {
     let td = await this.build();
     td = this.relate(td);
-    const tt = this.generate(td);
+    const tt = this.generate(td, false);
     td.text = tt;
     await this.write(td);
     return td;
   }
 
-  build(): Promise<TableData> {
+  build(isClosed = true): Promise<TableData> {
     const builder = new AutoBuilder(this.sequelize, this.options);
     return builder.build().then((tableData) => {
       if (this.options.closeConnectionAutomatically) {
-        return this.sequelize.close().then(() => tableData);
+        return isClosed ? this.sequelize.close().then(() => tableData) : tableData;
       }
       return tableData;
     });
@@ -72,10 +72,23 @@ export class SequelizeAuto {
     return relater.buildRelations(td);
   }
 
-  generate(tableData: TableData) {
+  generate<T extends boolean>(
+    tableData: TableData,
+    isFn?: T
+  ): T extends false ? ReturnType<AutoGenerator['generateText']> : () => void {
     const dialect = dialects[this.sequelize.getDialect() as Dialect];
     const generator = new AutoGenerator(tableData, dialect, this.options);
-    return generator.generateText();
+
+    if (!!isFn === false) {
+      return generator.generateText() as T extends false ? ReturnType<AutoGenerator['generateText']> : () => void;
+    }
+
+    return (() => {
+      _.each(generator.generateText(isFn), (fnCode, tableName) => {
+        const definedFn = new Function(`return ${fnCode}`);
+        definedFn()(this.sequelize, DataTypes);
+      });
+    }) as T extends false ? ReturnType<AutoGenerator['generateText']> : () => void;
   }
 
   write(tableData: TableData) {

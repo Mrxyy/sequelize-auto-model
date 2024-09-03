@@ -93,12 +93,22 @@ export class AutoGenerator {
     return header;
   }
 
-  generateText() {
+  makeHeaderTemplateForFn() {
+    let header = '';
+    const sp = this.space[1];
+    header += 'function #TABLE#(sequelize, DataTypes) {\n';
+    header += 'const Sequelize = sequelize.Sequelize; \n';
+    header += sp + "return sequelize.define('#TABLE#', {\n";
+    return header;
+  }
+
+  generateText(isFnCode = false) {
     const tableNames = _.keys(this.tables);
 
-    const header = this.makeHeaderTemplate();
+    const header = isFnCode ? this.makeHeaderTemplateForFn() : this.makeHeaderTemplate();
 
     const text: { [name: string]: string } = {};
+    // eslint-disable-next-line max-statements
     tableNames.forEach((table) => {
       let str = header;
       const [schemaName, tableNameOrig] = qNameSplit(table);
@@ -196,7 +206,7 @@ export class AutoGenerator {
     // add all the fields
     let str = '';
     const fields = _.keys(this.tables[table]);
-    fields.forEach((field, index) => {
+    fields.forEach((field) => {
       timestamps ||= this.isTimestampField(field);
       paranoid ||= this.isParanoidField(field);
 
@@ -298,6 +308,7 @@ export class AutoGenerator {
 
     // column's attributes
     const fieldAttrs = _.keys(fieldObj);
+    // eslint-disable-next-line max-statements, complexity
     fieldAttrs.forEach((attr) => {
       // We don't need the special attribute from postgresql; "unique" is handled separately
       if (attr === 'special' || attr === 'elementType' || attr === 'unique') {
@@ -514,6 +525,7 @@ export class AutoGenerator {
   }
 
   /** Get the sequelize type from the Field */
+  // eslint-disable-next-line complexity, max-statements
   private getSqType(fieldObj: Field, attr: string): string {
     const attrValue = (fieldObj as any)[attr];
     if (!attrValue.toLowerCase) {
@@ -654,6 +666,7 @@ export class AutoGenerator {
 
     table = this.addSchemaForRelations(table);
 
+    // eslint-disable-next-line max-statements
     this.relations.forEach((rel) => {
       if (!rel.isM2M) {
         if (rel.childTable === table) {

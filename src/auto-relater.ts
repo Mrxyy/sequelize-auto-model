@@ -63,6 +63,7 @@ export class AutoRelater {
       spec.foreignSources.target_table as string
     );
     const sourceProp = recase(this.caseProp, fkFieldName);
+    const targetProp = recase(this.caseProp, spec.foreignSources.target_column as string); // 父表中的主键或唯一键
 
     // use "hasOne" cardinality if this FK is also a single-column Primary or Unique key; else "hasMany"
     const isOne =
@@ -79,6 +80,7 @@ export class AutoRelater {
       childTable: qNameJoin(spec.foreignSources.source_schema || schema, spec.foreignSources.source_table),
       isOne: isOne,
       isM2M: false,
+      childId: targetProp,
     });
 
     if (spec.isPrimaryKey) {
