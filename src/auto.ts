@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import _, { keys } from 'lodash';
 import { DataTypes, Dialect, Sequelize } from 'sequelize';
 import { AutoBuilder } from './auto-builder';
 import { AutoGenerator } from './auto-generator';
@@ -51,7 +51,7 @@ export class SequelizeAuto {
   async run(): Promise<TableData> {
     let td = await this.build();
     td = this.relate(td);
-    const tt = this.generate(td, false);
+    const tt = this.generate(td);
     td.text = tt;
     await this.write(td);
     return td;
@@ -72,28 +72,45 @@ export class SequelizeAuto {
     return relater.buildRelations(td);
   }
 
-  generate<T extends boolean>(
-    tableData: TableData,
-    isFn?: T
-  ): T extends false ? ReturnType<AutoGenerator['generateText']> : () => void {
+  generate(tableData: TableData) {
     const dialect = dialects[this.sequelize.getDialect() as Dialect];
     const generator = new AutoGenerator(tableData, dialect, this.options);
 
-    if (!!isFn === false) {
-      return generator.generateText() as T extends false ? ReturnType<AutoGenerator['generateText']> : () => void;
-    }
+    return generator.generateText();
+  }
 
-    return (() => {
-      _.each(generator.generateText(isFn), (fnCode, tableName) => {
+  //without relation
+  generateModelsFn(tableData: TableData): () => void {
+    const dialect = dialects[this.sequelize.getDialect() as Dialect];
+    const generator = new AutoGenerator(tableData, dialect, this.options);
+
+    return () => {
+      _.each(generator.generateText(true), (fnCode, tableName) => {
+        // eslint-disable-next-line no-new-func
         const definedFn = new Function(`return ${fnCode}`);
         definedFn()(this.sequelize, DataTypes);
       });
-    }) as T extends false ? ReturnType<AutoGenerator['generateText']> : () => void;
+    };
   }
 
   write(tableData: TableData) {
     const writer = new AutoWriter(tableData, this.options);
     return writer.write();
+  }
+
+  getCreateModelsFn(tableData: TableData) {
+    return () => {
+      const createModelsFn = this.generateModelsFn(tableData);
+      const writer = new AutoWriter(tableData, this.options);
+      createModelsFn();
+      console.log(`{${keys(this.sequelize.models).join(',')}}`);
+      // eslint-disable-next-line no-new-func
+      const createModelsRelationsFn = new Function(
+        `{${keys(this.sequelize.models).join(',')}}`,
+        `${writer.createAssociations()}`
+      );
+      createModelsRelationsFn(this.sequelize.models);
+    };
   }
 
   getDefaultPort(dialect?: Dialect) {

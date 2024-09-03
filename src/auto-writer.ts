@@ -107,7 +107,7 @@ export class AutoWriter {
   }
 
   /** Create the belongsToMany/belongsTo/hasMany/hasOne association strings */
-  private createAssociations(typeScript: boolean) {
+  createAssociations(typeScript?: boolean) {
     let strBelongs = '';
     let strBelongsToMany = '';
     const sp = this.space[1];

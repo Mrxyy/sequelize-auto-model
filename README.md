@@ -1,4 +1,5 @@
-# Sequelize-Auto
+> The repository fork [sequelize-auto](https://github.com/sequelize/sequelize-auto)
+# sequelize-auto-model
 
 <!-- [![Greenkeeper badge](https://badges.greenkeeper.io/sequelize/sequelize-auto.svg)](https://greenkeeper.io/) -->
 
@@ -8,13 +9,13 @@ Automatically generate models for [SequelizeJS](https://github.com/sequelize/seq
 
 ## Install
 
-    npm install sequelize-auto
+    npm install sequelize-auto-model
 
 ## Prerequisites
 
 You will need to install `sequelize`; it's no longer installed by `sequelize-auto`.
 
-You will need to install the correct dialect binding before using sequelize-auto.
+You will need to install the correct dialect binding before using sequelize-auto-model.
 
 Dialect | Install
 ---|---
@@ -22,11 +23,12 @@ MySQL/MariaDB | `npm install sequelize mysql2`
 Postgres | `npm install sequelize pg pg-hstore`
 Sqlite | `npm install sequelize sqlite3`
 MSSQL | `npm install sequelize tedious`
+Oracle  | `npm install sequelize oracledb`
 
 
 ## Usage
 
-    sequelize-auto -h <host> -d <database> -u <user> -x [password] -p [port]  --dialect [dialect] -c [/path/to/config] -o [/path/to/models] -t [tableName]
+    sequelize-auto-model -h <host> -d <database> -u <user> -x [password] -p [port]  --dialect [dialect] -c [/path/to/config] -o [/path/to/models] -t [tableName]
 ```
 Options:
     --help               Show help                                   [boolean]
@@ -40,7 +42,7 @@ Options:
 -p, --port               Port number for database (not for sqlite). Ex:
                           MySQL/MariaDB: 3306, Postgres: 5432, MSSQL: 1433
                                                                       [number]
--c, --config             Path to JSON file for Sequelize-Auto options and
+-c, --config             Path to JSON file for sequelize-auto-model options and
                           Sequelize's constructor "options" flag object as
                           defined here:
                           https://sequelize.org/api/v6/class/src/sequelize.js~sequelize#instance-constructor-constructor
@@ -79,11 +81,11 @@ Options:
                           names                                      [boolean]
 ```
 
-> On Windows, provide the path to sequelize-auto: `node_modules\.bin\sequelize-auto [args]`
+> On Windows, provide the path to sequelize-auto-model: `node_modules\.bin\sequelize-auto [args]`
 
 ## Example
 
-    sequelize-auto -o "./models" -d sequelize_auto_test -h localhost -u my_username -p 5432 -x my_password -e postgres
+    sequelize-auto-model -o "./models" -d sequelize_auto_test -h localhost -u my_username -p 5432 -x my_password -e postgres
 
 Produces a file/files such as `./models/User.js` which looks like:
 
@@ -382,6 +384,16 @@ const options = { caseFile: 'l', caseModel: 'p', caseProp: 'c' };
 
 const auto = new SequelizeAuto(sequelize, null, null, options);
 auto.run();
+```
+
+Inject the model into the instance.
+```js
+    const options: any = { caseFile: 'c', caseModel: 'c', caseProp: 'c' };
+    const auto = new SequelizeAuto(sequelizeInstance, null, null, options);
+    let tableData = await auto.build(false);
+    tableData = auto.relate(tableData);
+    // auto.generateFn(tableData)(); without relation
+    auto.getCreateModelsFn(tableData)();
 ```
 
 ## Resources
