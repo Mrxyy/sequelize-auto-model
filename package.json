@@ -6,7 +6,7 @@
   },
   "description": "Automatically generate bare sequelize models from your database.",
   "main": "index.js",
-  "types": "src",
+  "types": "types",
   "keywords": [
     "mysql",
     "mssql",
